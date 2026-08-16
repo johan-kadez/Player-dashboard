@@ -1,7 +1,14 @@
 <!doctype html>
 <html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Player List</title><style>
-body{margin:0;background:#080b10;color:#f5f7fa;font-family:Arial,sans-serif}.wrap{max-width:1100px;margin:auto;padding:24px}h1{margin:0}.sub{color:#8d98a8;margin:6px 0 22px}input{width:100%;padding:13px;box-sizing:border-box;background:#10151d;border:1px solid #293444;border-radius:10px;color:white;margin-bottom:15px}.table{overflow:auto;background:#10151d;border:1px solid #202938;border-radius:14px}table{width:100%;min-width:650px;border-collapse:collapse}th,td{padding:14px;text-align:left;border-bottom:1px solid #202938}th{font-size:12px;color:#8d98a8;text-transform:uppercase}.badge{background:#182231;padding:6px 9px;border-radius:7px}.status{font-size:12px;color:#8d98a8;margin-bottom:12px}.empty{text-align:center;padding:30px;color:#8d98a8}
+body{
+margin:0;
+color:#f5f7fa;
+font-family:Arial,sans-serif;
+background:
+linear-gradient(rgba(8,11,16,.60),rgba(8,11,16,.72)),
+url("./file_000000004d6881faa35b956fc22f9aab.PNG") center/cover fixed no-repeat;
+}.wrap{max-width:1100px;margin:auto;padding:24px}h1{margin:0}.sub{color:#8d98a8;margin:6px 0 22px}input{width:100%;padding:13px;box-sizing:border-box;background:#10151d;border:1px solid #293444;border-radius:10px;color:white;margin-bottom:15px}.table{overflow:auto;background:#10151d;border:1px solid #202938;border-radius:14px}table{width:100%;min-width:650px;border-collapse:collapse}th,td{padding:14px;text-align:left;border-bottom:1px solid #202938}th{font-size:12px;color:#8d98a8;text-transform:uppercase}.badge{background:#182231;padding:6px 9px;border-radius:7px}.status{font-size:12px;color:#8d98a8;margin-bottom:12px}.empty{text-align:center;padding:30px;color:#8d98a8}
 </style></head><body><div class="wrap"><h1>LIST PESERTA LONG RALLY</h1><div class="sub">Daftar peserta • Read Only</div><div class="status" id="status">Menghubungkan database...</div><input id="search" placeholder="🔎 Cari player..."><div class="table"><table><thead><tr><th>No.</th><th>Nama Player</th><th>ID Player</th><th>TikTok</th><th>WhatsApp</th></tr></thead><tbody id="body"></tbody></table></div></div>
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
