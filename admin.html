@@ -11,7 +11,26 @@ import{getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut}from"https:
 import{getFirestore,collection,onSnapshot,addDoc,updateDoc,deleteDoc,doc}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 import{firebaseConfig}from"./firebase-config.js";
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);let data=[],editId=null;
-loginBtn.onclick=async()=>{try{await signInWithEmailAndPassword(auth,email.value,password.value);error.textContent=""}catch(e){error.textContent="Login gagal: "+e.message}};
+const loginBtn=document.getElementById("loginBtn");
+const email=document.getElementById("email");
+const password=document.getElementById("password");
+const error=document.getElementById("error");
+const logout=document.getElementById("logout");
+const add=document.getElementById("add");
+const cancel=document.getElementById("cancel");
+const save=document.getElementById("save");
+const search=document.getElementById("search");
+const body=document.getElementById("body");
+const modal=document.getElementById("modal");
+const title=document.getElementById("title");
+const name=document.getElementById("name");
+const playerId=document.getElementById("playerId");
+const tiktok=document.getElementById("tiktok");
+const wa=document.getElementById("wa");
+const login=document.getElementById("login");
+const dash=document.getElementById("dash");
+const status=document.getElementById("status");
+  loginBtn.onclick=async()=>{try{await signInWithEmailAndPassword(auth,email.value,password.value);error.textContent=""}catch(e){error.textContent="Login gagal: "+e.message}};
 logout.onclick=()=>signOut(auth);add.onclick=()=>openModal();cancel.onclick=closeModal;search.oninput=render;
 onAuthStateChanged(auth,user=>{if(user){login.style.display="none";dash.style.display="block";status.textContent="Login: "+user.email;listen()}else{login.style.display="block";dash.style.display="none"}});
 function listen(){onSnapshot(collection(db,"players"),s=>{data=s.docs.map(d=>({id:d.id,...d.data()}));data.sort((a,b)=>(a.name||"").localeCompare(b.name||""));render()})}
