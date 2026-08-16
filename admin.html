@@ -2,6 +2,10 @@
 <html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin Panel</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#080b10;color:#f5f7fa;font-family:Arial,sans-serif}.wrap{max-width:1150px;margin:auto;padding:24px}.login{max-width:390px;margin:10vh auto;background:#10151d;border:1px solid #293444;border-radius:16px;padding:24px}.dashboard{display:none}h1{margin:0}.sub,.status{color:#8d98a8;margin:6px 0 20px}.form{display:grid;gap:12px}input{width:100%;padding:12px;background:#0b1017;border:1px solid #293444;border-radius:10px;color:white}button{border:0;border-radius:9px;padding:11px 14px;font-weight:bold;cursor:pointer}.primary{background:#2387ff;color:white}.danger{background:#3a2027;color:#ffbdc6}.muted{background:#293444;color:white}.success{background:#174f31;color:#9ff0bc}header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;gap:10px}.toolbar{display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap}.toolbar input{flex:1;min-width:220px;margin:0}.quota{padding:13px 15px;border-radius:12px;background:#102b4d;border:1px solid #225b91;margin-bottom:15px}.tabs{display:flex;gap:8px;margin-bottom:15px}.table{overflow:auto;background:#10151d;border:1px solid #202938;border-radius:14px;margin-bottom:20px}table{width:100%;min-width:850px;border-collapse:collapse}th,td{padding:14px;text-align:left;border-bottom:1px solid #202938}th{font-size:12px;color:#8d98a8}.error{color:#ff8a98;margin-top:10px;font-size:13px}.hidden{display:none}
+
+.modalConfirm{display:none;position:fixed;inset:0;background:rgba(0,0,0,.62);align-items:center;justify-content:center;padding:20px;z-index:9999}
+.confirmBox{width:min(430px,100%);background:rgba(9,44,82,.94);border:1px solid rgba(80,180,255,.65);box-shadow:0 0 30px rgba(0,120,255,.25);border-radius:18px;padding:24px;box-sizing:border-box;backdrop-filter:blur(10px)}
+.confirmBox h2{margin:0 0 10px;color:#dff2ff}.confirmBox p{margin:0;color:#b9d8ef;line-height:1.5}.confirmActions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}.confirmBtn{border:0;border-radius:10px;padding:11px 16px;font-weight:bold;cursor:pointer}.confirmCancel{background:#293444;color:white}.confirmOk{background:#168cff;color:white;box-shadow:0 0 14px rgba(22,140,255,.3)}
 </style></head><body>
 <div class="login" id="login"><h1>ADMIN PANEL</h1><div class="sub">Login Dengan Akun Admin</div><div class="form"><input id="email" type="email" placeholder="Email admin"><input id="password" type="password" placeholder="Password"><button class="primary" id="loginBtn">LOGIN</button></div><div class="error" id="error"></div></div>
 <div class="wrap dashboard" id="dash"><header><div><h1>ADMIN PANEL</h1><div class="sub">Kelola pendaftaran dan peserta</div><div class="status" id="status"></div></div><button class="muted" id="logout">Logout</button></header>
@@ -10,10 +14,21 @@
 <div id="pendingView"><div class="table"><table><thead><tr><th>No.</th><th>Nama</th><th>ID</th><th>TikTok</th><th>WhatsApp</th><th>Aksi</th></tr></thead><tbody id="pendingBody"></tbody></table></div></div>
 <div id="playersView" class="hidden"><div class="toolbar"><input id="search" placeholder="🔎 Cari player..."><button class="primary" id="add">+ Tambah</button></div><div class="table"><table><thead><tr><th>No.</th><th>Nama</th><th>ID</th><th>TikTok</th><th>WhatsApp</th><th>Aksi</th></tr></thead><tbody id="body"></tbody></table></div></div>
 </div>
+
+<div class="modalConfirm" id="confirmModal">
+  <div class="confirmBox">
+    <h2 id="confirmTitle">Konfirmasi</h2>
+    <p id="confirmMessage"></p>
+    <div class="confirmActions">
+      <button class="confirmBtn confirmCancel" id="confirmCancel">Batal</button>
+      <button class="confirmBtn confirmOk" id="confirmOk">OK</button>
+    </div>
+  </div>
+</div>
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-import{getFirestore,collection,onSnapshot,addDoc,updateDoc,deleteDoc,doc,runTransaction,getDoc}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+import{getFirestore,collection,onSnapshot,addDoc,updateDoc,deleteDoc,doc,getDocs,query,where,runTransaction,runTransaction,getDoc}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 import{firebaseConfig}from"./firebase-config.js";
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);let players=[],pending=[],settings={maxParticipants:30,currentParticipants:0,open:true},editId=null;
 const $=id=>document.getElementById(id),login=$("login"),dash=$("dash"),error=$("error");
@@ -40,4 +55,63 @@ function openModal(){editId=null;$("title").textContent="Tambah Player";$("name"
 $("cancel").onclick=()=>modal.style.display="none";
 window.editPlayer=id=>{let p=players.find(x=>x.id===id);if(!p)return;editId=id;$("title").textContent="Edit Player";$("name").value=p.name||"";$("playerId").value=p.playerId||"";$("tiktok").value=p.tiktok||"";$("wa").value=p.wa||"";modal.style.display="flex"};
 $("save").onclick=async()=>{let p={name:$("name").value.trim(),playerId:$("playerId").value.trim(),tiktok:$("tiktok").value.trim(),wa:$("wa").value.trim()};if(!p.name||!p.playerId)return alert("Nama dan ID Player wajib diisi.");if(editId)await updateDoc(doc(db,"players",editId),p);else await runTransaction(db,async tx=>{let sRef=doc(db,"settings","registration"),ss=await tx.get(sRef),s=ss.exists()?ss.data():{maxParticipants:30,currentParticipants:0,open:true};let c=Number(s.currentParticipants||0),m=Number(s.maxParticipants||30);if(c>=m)throw Error("Kuota 30 player penuh.");tx.set(doc(collection(db,"players")),{...p,createdAt:Date.now()});tx.set(sRef,{maxParticipants:m,currentParticipants:c+1,open:c+1<m},{merge:true})});modal.style.display="none"};
+
+const confirmModal=document.getElementById("confirmModal");
+const confirmTitle=document.getElementById("confirmTitle");
+const confirmMessage=document.getElementById("confirmMessage");
+const confirmCancel=document.getElementById("confirmCancel");
+const confirmOk=document.getElementById("confirmOk");
+let confirmAction=null;
+function showConfirm(title,msg,action){
+  confirmTitle.textContent=title; confirmMessage.textContent=msg; confirmAction=action;
+  confirmModal.style.display="flex";
+}
+confirmCancel.onclick=()=>{confirmModal.style.display="none";confirmAction=null};
+confirmOk.onclick=async()=>{const fn=confirmAction;confirmModal.style.display="none";confirmAction=null;if(fn)await fn()};
+confirmModal.onclick=e=>{if(e.target===confirmModal)confirmCancel.click()};
+
+const pendingBody=document.getElementById("pendingBody");
+function listenPending(){
+  onSnapshot(query(collection(db,"registrations"),where("status","==","pending")),snap=>{
+    const rows=snap.docs.map(d=>({id:d.id,...d.data()}));
+    pendingBody.innerHTML=rows.length?rows.map((r,i)=>`
+      <tr><td>${i+1}</td><td>${esc(r.name)}</td><td>${esc(r.playerId)}</td><td>${esc(r.tiktok)}</td>
+      <td>${esc(r.wa)}</td><td>
+      <button class="confirmBtn confirmOk" onclick="acceptRegistration('${r.id}')">Accept</button>
+      <button class="confirmBtn confirmCancel" onclick="declineRegistration('${r.id}')">Decline</button>
+      </td></tr>`).join(""):`<tr><td colspan="6" class="empty">Tidak ada pendaftaran pending.</td></tr>`;
+  },e=>{pendingBody.innerHTML=`<tr><td colspan="6">Gagal memuat: ${esc(e.message)}</td></tr>`});
+}
+window.acceptRegistration=id=>{
+  const r=id;
+  showConfirm("ACCEPT PENDAFTARAN?","Player ini akan masuk ke daftar peserta.",async()=>{
+    try{
+      const regRef=doc(db,"registrations",r);
+      await runTransaction(db,async tx=>{
+        const regSnap=await tx.get(regRef);
+        if(!regSnap.exists()) throw new Error("Pendaftaran tidak ditemukan.");
+        const data=regSnap.data();
+        if(data.status!=="pending") throw new Error("Pendaftaran sudah diproses.");
+        const setRef=doc(db,"settings","registration");
+        const setSnap=await tx.get(setRef);
+        const st=setSnap.data()||{};
+        const current=Number(st.currentParticipants||0), max=Number(st.maxParticipants||30);
+        if(current>=max) throw new Error("Kuota 30 player sudah penuh.");
+        const playerRef=doc(collection(db,"players"));
+        tx.set(playerRef,{name:data.name,playerId:data.playerId,tiktok:data.tiktok,wa:data.wa});
+        tx.update(regRef,{status:"accepted",processedAt:new Date()});
+        tx.update(setRef,{currentParticipants:current+1,open:current+1<max});
+      });
+      showConfirm("BERHASIL","Player berhasil diterima.",null);
+    }catch(e){showConfirm("GAGAL",e.message,null)}
+  });
+};
+window.declineRegistration=id=>{
+  showConfirm("DECLINE PENDAFTARAN?","Pendaftaran player ini akan ditolak.",async()=>{
+    try{
+      await updateDoc(doc(db,"registrations",id),{status:"declined",processedAt:new Date()});
+      showConfirm("BERHASIL","Pendaftaran berhasil ditolak.",null);
+    }catch(e){showConfirm("GAGAL",e.message,null)}
+  });
+};
 </script></body></html>

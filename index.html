@@ -6,8 +6,22 @@
 *{box-sizing:border-box}body{margin:0;color:#f5f7fa;font-family:Arial,sans-serif;background:#080b10;background-image:linear-gradient(rgba(8,11,16,.60),rgba(8,11,16,.72)),url("./file_00000000da7081fa998986ddee409d89.png");background-position:center;background-size:cover;background-attachment:fixed;background-repeat:no-repeat}
 .wrap{max-width:1100px;margin:auto;padding:24px}h1{margin:0}.sub{color:#aab3c1;margin:6px 0 16px}.status{font-size:13px;color:#aab3c1;margin-bottom:14px}.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:15px}input{width:100%;padding:13px;background:#10151d;border:1px solid #293444;border-radius:10px;color:white}.search{flex:1;min-width:220px}.btn{border:0;border-radius:10px;padding:13px 16px;font-weight:700;cursor:pointer}.register{background:rgba(25,120,255,.72);border:1px solid rgba(110,180,255,.6);color:#fff;box-shadow:0 8px 25px rgba(0,80,180,.18)}.register:disabled{opacity:.55;cursor:not-allowed}.table{overflow:auto;background:#10151d;border:1px solid #202938;border-radius:14px}table{width:100%;min-width:650px;border-collapse:collapse}th,td{padding:14px;text-align:left;border-bottom:1px solid #202938}th{font-size:12px;color:#8d98a8;text-transform:uppercase}.badge{background:#182231;padding:6px 9px;border-radius:7px}.empty{text-align:center;padding:30px;color:#8d98a8}
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);align-items:center;justify-content:center;padding:20px}.box{width:min(460px,100%);background:rgba(10,35,68,.96);border:1px solid rgba(80,160,255,.55);border-radius:18px;padding:22px;box-shadow:0 20px 70px rgba(0,0,0,.45)}.box h2{margin-top:0}.form{display:grid;gap:11px}.hint{font-size:12px;color:#b9c8da}.actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}.cancel{background:#293444;color:white}.submit{background:#2387ff;color:white}.error{color:#ff9ca8;font-size:13px;margin-top:10px}
-.notice{display:none;position:fixed;inset:0;background:rgba(0,0,0,.76);align-items:center;justify-content:center;padding:20px;z-index:20}.notice-box{width:min(420px,100%);background:rgba(8,43,82,.97);border:1px solid rgba(72,165,255,.75);border-radius:18px;padding:24px;text-align:center;box-shadow:0 20px 80px rgba(0,90,220,.28),inset 0 0 35px rgba(35,135,255,.08);animation:pop .18s ease-out}.notice-icon{width:52px;height:52px;border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;background:rgba(35,135,255,.22);border:1px solid rgba(100,190,255,.6);font-size:25px}.notice-box h3{margin:0 0 9px;font-size:20px}.notice-box p{margin:0;color:#c9dcf2;line-height:1.5;font-size:14px}.notice-ok{margin-top:18px;background:#2387ff;color:white;min-width:100px}.notice-box.success{border-color:rgba(75,180,255,.85)}.notice-box.warning{border-color:rgba(255,190,80,.65)}.notice-box.warning .notice-icon{background:rgba(255,170,40,.14);border-color:rgba(255,190,80,.55)}
-@keyframes pop{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+.footerCopyright{
+  position:fixed;
+  left:50%;
+  bottom:18px;
+  transform:translateX(-50%);
+  z-index:1000;
+  text-align:center;
+  padding:10px 18px;
+  color:rgba(245,247,250,.92);
+  font-size:13px;
+  letter-spacing:.3px;
+  white-space:nowrap;
+  pointer-events:none;
+  text-shadow:0 2px 8px rgba(0,0,0,.8);
+}
 </style></head>
 <body><div class="wrap">
 <h1>LIST PESERTA LONG RALLY</h1>
@@ -17,16 +31,14 @@
 <div class="table"><table><thead><tr><th>No.</th><th>Nama Player</th><th>ID Player</th><th>TikTok</th></tr></thead><tbody id="body"></tbody></table></div>
 </div>
 <div class="modal" id="modal"><div class="box"><h2>Daftar Player</h2><div class="hint" id="quota"></div>
-<div class="form"><input id="name" placeholder="Nama Player" maxlength="80"><input id="playerId" placeholder="ID Player" maxlength="40"><input id="tiktok" placeholder="TikTok" maxlength="80"><input id="wa" placeholder="WhatsApp (minimal 11 digit)" maxlength="30" inputmode="numeric" autocomplete="tel"><div class="hint">Nomor WhatsApp hanya dapat dilihat admin.</div></div>
+<div class="form"><input id="name" placeholder="Nama Player" maxlength="80"><input id="playerId" placeholder="ID Player" maxlength="40"><input id="tiktok" placeholder="TikTok" maxlength="80"><input id="wa" placeholder="WhatsApp" maxlength="30"><div class="hint">Nomor WhatsApp hanya dapat dilihat admin.</div></div>
 <div class="error" id="error"></div><div class="actions"><button class="btn cancel" id="cancel">Batal</button><button class="btn submit" id="submit">Kirim Pendaftaran</button></div></div></div>
-<div class="notice" id="notice"><div class="notice-box" id="noticeBox"><div class="notice-icon" id="noticeIcon">✓</div><h3 id="noticeTitle">Pendaftaran Berhasil</h3><p id="noticeText">Data kamu sudah dikirim dan sedang menunggu persetujuan admin.</p><button class="btn notice-ok" id="noticeOk">OK</button></div></div>
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 import{getFirestore,collection,onSnapshot,addDoc,doc,getDoc}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 import{firebaseConfig}from"./firebase-config.js";
 const app=initializeApp(firebaseConfig),db=getFirestore(app);let data=[],settings={maxParticipants:30,currentParticipants:0,open:true};
 const status=document.getElementById("status"),body=document.getElementById("body"),search=document.getElementById("search"),registerBtn=document.getElementById("registerBtn"),modal=document.getElementById("modal"),quota=document.getElementById("quota"),error=document.getElementById("error");
-const notice=document.getElementById("notice"),noticeBox=document.getElementById("noticeBox"),noticeIcon=document.getElementById("noticeIcon"),noticeTitle=document.getElementById("noticeTitle"),noticeText=document.getElementById("noticeText");
 const nameEl=document.getElementById("name"),playerId=document.getElementById("playerId"),tiktok=document.getElementById("tiktok"),wa=document.getElementById("wa");
 onSnapshot(collection(db,"players"),snap=>{data=snap.docs.map(d=>({id:d.id,...d.data()}));data.sort((a,b)=>(a.name||"").localeCompare(b.name||""));render()},e=>status.textContent="Database error: "+e.message);
 onSnapshot(doc(db,"settings","registration"),snap=>{if(snap.exists())settings={...settings,...snap.data()};updateRegistration()},e=>status.textContent="Database error: "+e.message);
@@ -34,11 +46,7 @@ function updateRegistration(){let count=Number(settings.currentParticipants??dat
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
 function render(){let q=search.value.toLowerCase(),a=data.filter(p=>Object.values(p).join(" ").toLowerCase().includes(q));body.innerHTML=a.length?a.map((p,i)=>`<tr><td>${i+1}</td><td><b>${esc(p.name)}</b></td><td><span class="badge">${esc(p.playerId)}</span></td><td>${esc(p.tiktok||"-")}</td></tr>`).join(""):`<tr><td colspan="4" class="empty">Belum ada data.</td></tr>`}
 search.oninput=render;
-wa.oninput=()=>{wa.value=wa.value.replace(/\D/g,"")};
-function showNotice(title,text,type="success",icon="✓"){noticeBox.className="notice-box "+type;noticeIcon.textContent=icon;noticeTitle.textContent=title;noticeText.textContent=text;notice.style.display="flex"}
-document.getElementById("noticeOk").onclick=()=>notice.style.display="none";
-notice.onclick=e=>{if(e.target===notice)notice.style.display="none"};
-registerBtn.onclick=()=>{if(registerBtn.disabled){showNotice("Pendaftaran Ditutup","Kuota peserta sudah penuh atau pendaftaran sedang ditutup.","warning","!");return}error.textContent="";modal.style.display="flex"};
+registerBtn.onclick=()=>{if(registerBtn.disabled)return;error.textContent="";modal.style.display="flex"};
 document.getElementById("cancel").onclick=()=>modal.style.display="none";
-document.getElementById("submit").onclick=async()=>{error.textContent="";let p={name:nameEl.value.trim(),playerId:playerId.value.trim(),tiktok:tiktok.value.trim(),wa:wa.value.trim(),status:"pending",createdAt:Date.now()};if(!p.name||!p.playerId||!p.tiktok||!p.wa){showNotice("Data Belum Lengkap","Nama Player, ID Player, TikTok, dan WhatsApp wajib diisi.","warning","!");return}if(!/^\d{11,}$/.test(p.wa)){showNotice("Nomor WhatsApp Tidak Valid","Nomor WhatsApp harus minimal 11 digit angka dan tidak boleh mengandung huruf atau simbol.","warning","!");return}try{let s=await getDoc(doc(db,"settings","registration"));let x=s.exists()?s.data():settings;let count=Number(x.currentParticipants??data.length),max=Number(x.maxParticipants??30);if(x.open===false||count>=max){showNotice("Pendaftaran Ditutup","Kuota 30 player sudah penuh. Pendaftaran tidak dapat dilakukan lagi.","warning","!");return}await addDoc(collection(db,"registrations"),p);modal.style.display="none";nameEl.value=playerId.value=tiktok.value=wa.value="";showNotice("Pendaftaran Berhasil","Data kamu sudah dikirim dan sedang menunggu persetujuan admin.","success","✓")}catch(e){showNotice("Pendaftaran Gagal","Terjadi masalah saat mengirim pendaftaran. Silakan coba lagi.","warning","!");console.error(e)}};
-</script></body></html>
+document.getElementById("submit").onclick=async()=>{error.textContent="";let p={name:nameEl.value.trim(),playerId:playerId.value.trim(),tiktok:tiktok.value.trim(),wa:wa.value.trim(),status:"pending",createdAt:Date.now()};if(!p.name||!p.playerId||!p.tiktok||!p.wa){error.textContent="Semua kolom wajib diisi.";return}try{let s=await getDoc(doc(db,"settings","registration"));let x=s.exists()?s.data():settings;let count=Number(x.currentParticipants??data.length),max=Number(x.maxParticipants??30);if(x.open===false||count>=max){error.textContent="Pendaftaran sudah ditutup. Kuota 30 player telah penuh.";return}await addDoc(collection(db,"registrations"),p);modal.style.display="none";nameEl.value=playerId.value=tiktok.value=wa.value="";alert("Pendaftaran berhasil dikirim. Menunggu persetujuan admin.")}catch(e){error.textContent="Gagal mendaftar: "+e.message}};
+</script><div class="footerCopyright">Disediakan Oleh • Johan Kadez</div></body></html>
