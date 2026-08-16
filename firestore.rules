@@ -8,6 +8,8 @@ service cloud.firestore {
       allow create, update, delete: if signedIn();
     }
 
+    // Public can submit a registration, but cannot read registrations.
+    // The quota document must exist and must show that registration is open.
     match /registrations/{registrationId} {
       allow create: if
         request.resource.data.status == "pending" &&
@@ -15,16 +17,20 @@ service cloud.firestore {
         request.resource.data.playerId is string &&
         request.resource.data.tiktok is string &&
         request.resource.data.wa is string &&
+        exists(/databases/$(database)/documents/settings/registration) &&
         get(/databases/$(database)/documents/settings/registration).data.open == true &&
         get(/databases/$(database)/documents/settings/registration).data.currentParticipants <
           get(/databases/$(database)/documents/settings/registration).data.maxParticipants;
+
+      // Only authenticated users can view/process registrations.
       allow read, update, delete: if signedIn();
     }
 
+    // Public needs to read quota status. Only authenticated users may create/update it.
     match /settings/registration {
       allow read: if true;
-      allow create: if signedIn();
-      allow update: if signedIn();
+      allow create, update: if signedIn();
+      allow delete: if signedIn();
     }
   }
 }
