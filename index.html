@@ -15,5 +15,5 @@ const search=document.getElementById("search");
 onSnapshot(collection(db,"players"),snap=>{data=snap.docs.map(d=>({id:d.id,...d.data()}));data.sort((a,b)=>(a.name||"").localeCompare(b.name||""));status.textContent="● Database tersambung • "+data.length+" player";render()},e=>status.textContent="Database error: "+e.message);
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
 function render(){let q=search.value.toLowerCase(),a=data.filter(p=>Object.values(p).join(" ").toLowerCase().includes(q));body.innerHTML=a.length?a.map((p,i)=>`<tr><td>${i+1}</td><td><b>${esc(p.name)}</b></td><td><span class="badge">${esc(p.playerId)}</span></td><td>${esc(p.tiktok||"-")}</td><td>${esc(p.wa||"-")}</td></tr>`).join(""):`<tr><td colspan="5" class="empty">Belum ada data.</td></tr>`}
-</script></body></html>
 search.oninput=render;
+</script></body></html>
